@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import openai
 import os
-# from dotenv import load_dotenv 
+# from dotenv import load_dotenv # uncomment for local development, loads key from .env file.
 
 # load_dotenv()  # <-- Add this line to load environment variables from .env
 
