@@ -1,0 +1,36 @@
+name: Deploy to Google Cloud Run
+
+# Trigger the workflow on push to the main branch
+on:
+  push:
+    branches:
+      - main
+
+# Define jobs
+jobs:
+  deploy:
+    # Specify the type of runner
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up Google Cloud SDK
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v0.2.0
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+
+    # Deploy to Google Cloud Run
+    - name: Deploy to Google Cloud Run
+      run: |
+        gcloud run deploy billy-1137 \
+        --image gcr.io/billy-1137/billy:v1 \
+        --region europe-north1 \
+        --set-env-vars OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+        --allow-unauthenticated

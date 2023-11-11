@@ -5,9 +5,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import openai
 import os
-from dotenv import load_dotenv 
+# from dotenv import load_dotenv 
 
-load_dotenv()  # <-- Add this line to load environment variables from .env
+# load_dotenv()  # <-- Add this line to load environment variables from .env
 
 # Fetch environment variables
 DATABASE_URL = os.getenv('DATABASE_URL')
