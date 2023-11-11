@@ -34,14 +34,14 @@ app = FastAPI()
 openai.api_key = OPENAI_API_KEY
 
 # Middleware for Authorization (very basic)
-@app.middleware("http")
-async def check_auth(request: Request, call_next):
-    # Implement your own auth-check logic here
-    authorized = request.headers.get("Authorization")
-    if not authorized:
-        raise HTTPException(status_code=400, detail="Not authorized")
-    response = await call_next(request)
-    return response
+# @app.middleware("http")
+# async def check_auth(request: Request, call_next):
+#     # Implement your own auth-check logic here
+#     authorized = request.headers.get("Authorization")
+#     if not authorized:
+#         raise HTTPException(status_code=400, detail="Not authorized")
+#     response = await call_next(request)
+#     return response
 
 @app.post("/ask/")
 async def ask_car_question(question: str):
