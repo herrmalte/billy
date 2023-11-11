@@ -1,1 +1,4 @@
 .env
+.ipython-version
+__pycache__
+.python-version
