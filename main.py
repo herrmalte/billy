@@ -15,8 +15,8 @@ from pydantic import BaseModel
 class Question(BaseModel):
     question: str
     
-from dotenv import load_dotenv # uncomment for local development, loads key from .env file.
-load_dotenv()  # <-- Add this line to load environment variables from .env
+# from dotenv import load_dotenv # uncomment for local development, loads key from .env file.
+# load_dotenv()  # <-- Add this line to load environment variables from .env
 
 # Fetch environment variables
 DATABASE_URL = os.getenv('DATABASE_URL')
