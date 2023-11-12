@@ -1,13 +1,22 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
-import sqlalchemy
-from sqlalchemy import create_engine, Column, Integer, String, Sequence
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+# import sqlalchemy
+# from sqlalchemy import create_engine, Column, Integer, String, Sequence
+# from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy.orm import sessionmaker
+from fastapi.responses import StreamingResponse
 import openai
-import os
-# from dotenv import load_dotenv # uncomment for local development, loads key from .env file.
+from openai import OpenAI
 
-# load_dotenv()  # <-- Add this line to load environment variables from .env
+import os
+from pydantic import BaseModel
+
+# from fastapi.utils import jsonable_encoder
+
+class Question(BaseModel):
+    question: str
+    
+from dotenv import load_dotenv # uncomment for local development, loads key from .env file.
+load_dotenv()  # <-- Add this line to load environment variables from .env
 
 # Fetch environment variables
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -29,9 +38,10 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # FastAPI app
 app = FastAPI()
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # OpenAI API setup
-openai.api_key = OPENAI_API_KEY
+
 
 # Middleware for Authorization (very basic)
 # @app.middleware("http")
@@ -44,7 +54,8 @@ openai.api_key = OPENAI_API_KEY
 #     return response
 
 @app.post("/ask/")
-async def ask_car_question(question: str):
+async def ask_car_question(question_data: Question):
+    question = question_data.question
     # Search in vectorized documents
     relevant_docs = []
 
@@ -63,18 +74,31 @@ async def ask_car_question(question: str):
     #     max_tokens=150
     # )
     
-    response = openai.ChatCompletion.create(
-        engine="gpt-3.5-turbo-1106",
-        prompt=question + "\n",
-        temperature=0.9,
-        max_tokens=150,
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": question}
+        ],
+        stream=True,
+        temperature=1,
+        max_tokens=256,
         top_p=1,
-        frequency_penalty=0.0,
-        presence_penalty=0.6,
-        stop=["\n", " Human:", " AI:"]
-    )   
-    return {"answer": response.choices[0].text.strip()}
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    import sys
+    def generate_response():
+        for chunk in response:
+            content = chunk.choices[0].delta.content
+            if content is not None:
+                sys.stdout.write(content)
+                sys.stdout.flush()
+                yield content
 
+    # Use the generator with StreamingResponse
+    return StreamingResponse(generate_response(), media_type="text/plain")
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
